@@ -129,7 +129,7 @@ function updateOnMouseMove(event) {
   drawTimeIndicator(time);
   var currentDate = new Date(Math.floor(time));
   if(mChart != null){
-    mChart.panels[0].chartCursor.showCursorAt(currentDate);
+    mChart.graphs[0].chart.chartCursor.showCursorAt(currentDate);
   }
 };
 
@@ -200,6 +200,7 @@ function parseData(dataset_url) {
     }
     var allPitchAvg = sumAllPitch / numOfPitch;
 
+
     for(var i = 0; i < inputdata.length; i++){
       var start = parseInt(parseFloat(inputdata[i].start_time) * 1000);
       var end = parseInt(parseFloat(inputdata[i].end_time) * 1000);
@@ -209,7 +210,6 @@ function parseData(dataset_url) {
       transcriptData.push({"start": start, "end": end, "label": String(value).trim()});
 
       var temppitchData = inputdata[i].pitch;
-
       var sum = 0;
       for (var j = 0; j < temppitchData.length; j++) {
         sum += parseFloat(temppitchData[j]);
@@ -223,11 +223,16 @@ function parseData(dataset_url) {
       } else {
         color = "#FFFF00";
       }
-   
-      for(var j = 0; j < temppitchData.length; j++){
-        var time = start + j * (end - start) / temppitchData.length;
-        pitchData.push({"time": time, "data":parseFloat(temppitchData[j]), "legendColor": AmCharts.randomColor, "label": "undefined", "colorfill": color});
-      }
+
+      pitchData.push({"time": start, "data":avg, "legendColor": AmCharts.randomColor, "label": temppitchData.transcription, "color":color});
+      // for(var j = 0; j < temppitchData.length; j++){
+      //   var time = start + j * (end - start) / temppitchData.length;
+      //   pitchData.push({"time": time, "data":parseFloat(temppitchData[j]), "legendColor": AmCharts.randomColor, "label": "undefined", "color":"#0000FF"});
+      // }
+
+      // for(var j = 0; j < 5; j++) {
+      //   pitchData.push({"color":"#0000FF", "data":j, "label":"test"});
+      // }
 
     }});
   return [transcriptData, pitchData];
@@ -237,132 +242,74 @@ function parseData(dataset_url) {
 function drawCharts(){
   var chart = null;
   chart = AmCharts.makeChart("chartdiv", {
-    type: "stock",
-    "theme": "light",
-    dataSets: [
-  {
-    color:"red",
-    fieldMappings: [{
-      fromField: "data",
-      toField: "data2"
+    type: "xy",
+    theme: "light",
+    dataProvider: pitchData,
+    valueAxes: [{
+      gridColor: "#FFFFFF",
+      gridAlpha: 0.2,
+      dashLength: 0
+    }],
+    startDuration: 1,
+    graphs: [{
+      balloonText: "[[label]]",
+      bullet: "none",
+      fillAlphas : 0.8,
+      fillColors: "color",
+      lineAlpha : 0.2,
+      lineThickness: 1,
+      lineColor: "color",
+      fillAlphas: 1,
+      xField: "time",
+      yField: "data"
+      // type : "column",
+      // valueField: "data",
+      // colorField: "color"
+    }],
+    chartCursor: {
+      categoryBalloonEnabled: true,
+      cursorAlpha: 0.6,
+      zoomable: false
     },
-    {
-      fromField: "label",
-      toField: "label2"
+    categoryField: "time",
+    categoryAxesSettings: {
+      groupToPeriods: [ 'fff', 'ss' ], // specify period grouping
+      parseDates: true,
+      autoGridCount: false,
+      dateFormats: [{
+        period: "fff",
+        format: "JJ:NN:SS"
+      }, {
+        period: "ss",
+        format: "JJ:NN:SS"
+      }, {
+        period: "mm",
+        format: "JJ:NN:SS"
+      }, {
+        period: "hh",
+        format: "JJ:NN:SS"
+      }, {
+        period: "DD",
+        format: "MMM DD"
+      }, {
+        period: "WW",
+        format: "MMM DD"
+      }, {
+        period: "MM",
+        format: "MMM"
+      }, {
+        period: "YYYY",
+        format: "YYYY"
+      }],
+      //"equalSpacing": true,
+      minPeriod: "fff"
     },
-    {
-      fromField: "legendColor",
-      toField: "legendColor"
-    },
-    { fromField: "colorfill",
-      toField: "colorfill"}
-  ],
-  dataProvider: pitchData,
-  categoryField: "time",
-  compared: false
-}
-],
-panels: [
-{
-  showCategoryAxis: true,
-  title: "Pitch (HZ)",
-  allowTurningOff: false,
-  stockGraphs: [ {
-    id: "g2",
-    compareGraphType:"smoothedLine",
-    useDataSetColors:false,
-    valueField: "data2",
-    compareField: "data2",
-    comparable: false,
-    visibleInLegend: true,
-    showBalloon: false,
-    lineColorField: "colorfill",
-    fillColorsField: "colorfill",
-    fillAlphas: 0.8
-  } ],
-  stockLegend: {
-    enabled: true,
-    markType: "none",
-    markSize: 0
-  },
-  listeners:[
-  {
-    event: "zoomed",
-    method: handleZoom
-  },{
-    event: "changed",
-    method: handleMousemove,
-  }],
-}
-],
-valueAxesSettings:{
-  labelsEnabled: false,
-},
-categoryAxesSettings: {
-  groupToPeriods: [ 'fff', 'ss' ], // specify period grouping
-  parseDates: true,
-  autoGridCount: false,
-  dateFormats: [{
-    period: "fff",
-    format: "JJ:NN:SS"
-  }, {
-    period: "ss",
-    format: "JJ:NN:SS"
-  }, {
-    period: "mm",
-    format: "JJ:NN:SS"
-  }, {
-    period: "hh",
-    format: "JJ:NN:SS"
-  }, {
-    period: "DD",
-    format: "MMM DD"
-  }, {
-    period: "WW",
-    format: "MMM DD"
-  }, {
-    period: "MM",
-    format: "MMM"
-  }, {
-    period: "YYYY",
-    format: "YYYY"
-  }],
-  //"equalSpacing": true,
-  minPeriod: "fff"
-},
-chartScrollbarSettings: {
-  enabled: true,
-  graph: "g1",
-  usePeriod: "fff",
-  position: "top",
-  dragIcon: "dragIconRectSmall",
-  selectedGraphLineColor:"#888888",
-},
-chartCursor:{
-  categoryBalloonDateFormat: "JJ:NN:SS",
-},
-chartCursorSettings: {
-  valueBalloonsEnabled: true,
-  fullWidth:false,
-  cursorAlpha:0.6,
-  selectWithoutZooming: true
-},
-legend:{
-  enabled:false
-}
-,
-periodSelector: {
-  labelStyle: 'hidden',
-  position: "top",
-  dateFormat: "JJ:NN:SS", // date format with milliseconds "NN:SS:QQQ"
-  inputFieldsEnabled: false,
-  inputFieldWidth: 100,
-  periods: [{
-    period: "MAX",
-    label: "Show all",
-    selected: true
-  } ]
-}
+    categoryAxis: {
+      gridPosition: "start",
+      gridAlpha: 0,
+      tickPosition: "start",
+      tickLength: 20
+    }
 });
 return chart;
 }
@@ -579,10 +526,10 @@ function myTimer2() {
 
 function connectAudioCharts(){
   mAudio.addEventListener("timeupdate", function(e) {
-    //console.log("time: " + e.target.currentTime);
+    console.log("time: " + e.target.currentTime);
     var currentDate = new Date(Math.floor(e.target.currentTime * 1000));
     for(var x in mChart.panels){
-      //console.log("set panel  " + x);
+      console.log("set panel  " + x);
       mChart.panels[x].chartCursor.showCursorAt(currentDate);
     }
   });
@@ -590,17 +537,21 @@ function connectAudioCharts(){
 
 function connectMouseEvents(){
   //console.log("connecting mouse events... ");
-  for(var x in mChart.panels){
+  for(var x in mChart.graphs){
     //console.log("set panel  " + x);
-    mChart.panels[x].chartCursor.addListener("changed", AmCharts.myHandleMove);
-    mChart.panels[x].chartDiv.addEventListener("mousedown", AmCharts.myHandleClick);
-    mChart.panels[x].chartCursor.addListener("selected", handleSelection);
+    console.log(mChart.graphs[x]);
+    mChart.graphs[x].chart.chartCursor.addListener("changed", AmCharts.myHandleMove);
+    mChart.graphs[x].chart.chartDiv.addEventListener("mousedown", AmCharts.myHandleClick);
+    mChart.graphs[x].chart.chartCursor.addListener("selected", handleSelection);
   }
 }
 
 AmCharts.myHandleMove = function(event) {
   if (undefined === event.index )
     return;
+  console.log(event);
+  console.log(event.index);
+  console.log(event.chart);
   AmCharts.myCurrentPosition = event.chart.dataProvider[event.index].time;
 }
 
