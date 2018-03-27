@@ -199,6 +199,7 @@ function parseData(dataset_url) {
       }
     }
     var allPitchAvg = sumAllPitch / numOfPitch;
+    console.log(allPitchAvg);
 
     for(var i = 0; i < inputdata.length; i++){
       var start = parseInt(parseFloat(inputdata[i].start_time) * 1000);
@@ -216,29 +217,29 @@ function parseData(dataset_url) {
       }
       var avg = sum / temppitchData.length;
       var color;
-      var data1;
-      var data2;
-      var data3;
-      if (avg > allPitchAvg + 20) {
+      var highdata;
+      var middata;
+      var lowdata;
+      if (avg > allPitchAvg * 1.15 || avg < allPitchAvg * 0.85) {
         color1 = "#FF0000";
-        data1 = 200;
-        data2 = 0;
-        data3 = 0;
-      } else if (avg < allPitchAvg - 20) {
-        color = "#00FF00";
-        data1 = 0;
-        data2 = 200;
-        data3 = 0;
-      } else {
+        highdata = 40;
+        middata = 0;
+        lowdata = 0;
+      } else if (avg > allPitchAvg * 1.10 || avg < allPitchAvg * 0.90) {
         color = "#FFFF00";
-        data1 = 0;
-        data2 = 0; 
-        data3 = 200;
+        highdata = 0;
+        middata = 40;
+        lowdata = 0;
+      } else {
+        color = "#00FF00";
+        highdata = 0;
+        middata = 0; 
+        lowdata = 40;
       }
    
       for(var j = 0; j < temppitchData.length; j++){
         var time = start + j * (end - start) / temppitchData.length;
-        pitchData.push({"time": time, "data":parseFloat(temppitchData[j]), "data1": data1, "data2": data2, "data3": data3, "legendColor": AmCharts.randomColor, "label": "undefined", "colorfill": color});
+        pitchData.push({"time": time, "data":parseFloat(temppitchData[j]), "highdata": highdata, "middata": middata, "lowdata": lowdata, "legendColor": AmCharts.randomColor, "label": "undefined"});
       }
 
     }});
@@ -259,16 +260,16 @@ function drawCharts(){
       toField: "data"
     },
     {
-      fromField: "data1",
-      toField: "data1"
+      fromField: "highdata",
+      toField: "highdata"
     },
     {
-      fromField: "data2",
-      toField: "data2"
+      fromField: "middata",
+      toField: "middata"
     },
     {
-      fromField: "data3",
-      toField: "data3"
+      fromField: "lowdata",
+      toField: "lowdata"
     },
     {
       fromField: "label",
@@ -277,9 +278,7 @@ function drawCharts(){
     {
       fromField: "legendColor",
       toField: "legendColor"
-    },
-    { fromField: "colorfill",
-      toField: "colorfill"}
+    }
   ],
   dataProvider: pitchData,
   categoryField: "time",
@@ -289,50 +288,54 @@ function drawCharts(){
 panels: [
 {
   showCategoryAxis: true,
-  title: "Pitch (HZ)",
+  title: "Pitch Deviation from Average",
   allowTurningOff: false,
-  stockGraphs: [ {
-    id: "high",
-    title: "high",
-    type:"line",
-    compareGraphType:"line",
-    useDataSetColors:false,
-    valueField: "data1",
-    compareField: "data1",
-    comparable: false,
-    visibleInLegend: true,
-    showBalloon: false,
-    lineColor: "#FF0000",
-    fillAlphas: 0.8
-  },
+  stockGraphs: [ 
   {
     id: "low",
-    title: "low",
+    title:"Low",
     type:"line",
     compareGraphType:"line",
     useDataSetColors:false,
-    valueField: "data2",
-    compareField: "data2",
+    valueField: "lowdata",
+    compareField: "lowdata",
     comparable: false,
     visibleInLegend: true,
     showBalloon: false,
-    lineColor: "#00FF00",
-    fillAlphas: 0.8
+    lineColor: "#9ae02a",
+    fillAlphas: 0.8,
+    lineAlpha: 0.8
   },
   {
     id: "mid",
-    title:"mid",
+    title: "Mid",
     type:"line",
     compareGraphType:"line",
     useDataSetColors:false,
-    valueField: "data3",
-    compareField: "data3",
+    valueField: "middata",
+    compareField: "middata",
     comparable: false,
     visibleInLegend: true,
     showBalloon: false,
     lineColor: "#FFFF00",
-    fillAlphas: 0.3
-  } ],
+    fillAlphas: 1.0,
+    lineAlpha: 1.0
+  },
+  {
+    id: "high",
+    title: "High",
+    type:"line",
+    compareGraphType:"line",
+    useDataSetColors:false,
+    valueField: "highdata",
+    compareField: "highdata",
+    comparable: false,
+    visibleInLegend: true,
+    showBalloon: false,
+    lineColor: "#FF0000",
+    fillAlphas: 1.0,
+    lineAlpha: 1.0
+  }],
   stockLegend: {
     enabled: true,
     markType: "none",
@@ -352,6 +355,7 @@ panels: [
 ],
 valueAxesSettings:{
   labelsEnabled: false,
+  maximum: 20
 },
 categoryAxesSettings: {
   groupToPeriods: [ 'fff', 'ss' ], // specify period grouping
