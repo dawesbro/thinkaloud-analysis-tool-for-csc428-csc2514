@@ -216,17 +216,29 @@ function parseData(dataset_url) {
       }
       var avg = sum / temppitchData.length;
       var color;
+      var data1;
+      var data2;
+      var data3;
       if (avg > allPitchAvg + 20) {
-        color = "#FF0000";
+        color1 = "#FF0000";
+        data1 = 200;
+        data2 = 0;
+        data3 = 0;
       } else if (avg < allPitchAvg - 20) {
         color = "#00FF00";
+        data1 = 0;
+        data2 = 200;
+        data3 = 0;
       } else {
         color = "#FFFF00";
+        data1 = 0;
+        data2 = 0; 
+        data3 = 200;
       }
    
       for(var j = 0; j < temppitchData.length; j++){
         var time = start + j * (end - start) / temppitchData.length;
-        pitchData.push({"time": time, "data":parseFloat(temppitchData[j]), "legendColor": AmCharts.randomColor, "label": "undefined", "colorfill": color});
+        pitchData.push({"time": time, "data":parseFloat(temppitchData[j]), "data1": data1, "data2": data2, "data3": data3, "legendColor": AmCharts.randomColor, "label": "undefined", "colorfill": color});
       }
 
     }});
@@ -238,13 +250,25 @@ function drawCharts(){
   var chart = null;
   chart = AmCharts.makeChart("chartdiv", {
     type: "stock",
-    "theme": "light",
+    theme: "light",
     dataSets: [
   {
     color:"red",
     fieldMappings: [{
       fromField: "data",
+      toField: "data"
+    },
+    {
+      fromField: "data1",
+      toField: "data1"
+    },
+    {
+      fromField: "data2",
       toField: "data2"
+    },
+    {
+      fromField: "data3",
+      toField: "data3"
     },
     {
       fromField: "label",
@@ -268,22 +292,53 @@ panels: [
   title: "Pitch (HZ)",
   allowTurningOff: false,
   stockGraphs: [ {
-    id: "g2",
-    compareGraphType:"smoothedLine",
+    id: "high",
+    title: "high",
+    type:"line",
+    compareGraphType:"line",
+    useDataSetColors:false,
+    valueField: "data1",
+    compareField: "data1",
+    comparable: false,
+    visibleInLegend: true,
+    showBalloon: false,
+    lineColor: "#FF0000",
+    fillAlphas: 0.8
+  },
+  {
+    id: "low",
+    title: "low",
+    type:"line",
+    compareGraphType:"line",
     useDataSetColors:false,
     valueField: "data2",
     compareField: "data2",
     comparable: false,
     visibleInLegend: true,
     showBalloon: false,
-    lineColorField: "colorfill",
-    fillColorsField: "colorfill",
+    lineColor: "#00FF00",
     fillAlphas: 0.8
+  },
+  {
+    id: "mid",
+    title:"mid",
+    type:"line",
+    compareGraphType:"line",
+    useDataSetColors:false,
+    valueField: "data3",
+    compareField: "data3",
+    comparable: false,
+    visibleInLegend: true,
+    showBalloon: false,
+    lineColor: "#FFFF00",
+    fillAlphas: 0.3
   } ],
   stockLegend: {
     enabled: true,
     markType: "none",
-    markSize: 0
+    markSize: 0,
+    labelText: "[[title]]",
+    valueText: ""
   },
   listeners:[
   {
