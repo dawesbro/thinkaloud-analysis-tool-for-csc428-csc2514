@@ -189,6 +189,7 @@ function parseData(dataset_url) {
   var pitchData = [];
   AmCharts.loadFile(dataset_url, {}, function(data) {
     inputdata = AmCharts.parseJSON(data);
+    /** ===== BEGIN MODIFIED CODE SECTION ===== **/
     var sumAllPitch = 0;
     var numOfPitch = 0;
     for(var i = 0; i < inputdata.length; i++) {
@@ -199,18 +200,19 @@ function parseData(dataset_url) {
       }
     }
     var allPitchAvg = sumAllPitch / numOfPitch;
-    console.log(allPitchAvg);
+    
+    /** ===== END MODIFIED CODE SECTION ===== **/
 
     for(var i = 0; i < inputdata.length; i++){
       var start = parseInt(parseFloat(inputdata[i].start_time) * 1000);
       var end = parseInt(parseFloat(inputdata[i].end_time) * 1000);
       var value = inputdata[i].transcription;
       var numWords = value.split(" ").length;
-      //console.log("numWords: " + numWords);
       transcriptData.push({"start": start, "end": end, "label": String(value).trim()});
 
       var temppitchData = inputdata[i].pitch;
 
+      /** ===== BEGIN MODIFIED CODE SECTION ===== **/
       var sum = 0;
       for (var j = 0; j < temppitchData.length; j++) {
         sum += parseFloat(temppitchData[j]);
@@ -241,13 +243,14 @@ function parseData(dataset_url) {
         var time = start + j * (end - start) / temppitchData.length;
         pitchData.push({"time": time, "data":parseFloat(temppitchData[j]), "highdata": highdata, "middata": middata, "lowdata": lowdata, "legendColor": AmCharts.randomColor, "label": "undefined"});
       }
-
+      /** ===== END MODIFIED CODE SECTION ===== **/
     }});
   return [transcriptData, pitchData];
 }
 
 //draw a line graph of the feature (e.g., pitch)
 function drawCharts(){
+  /** ===== BEGIN MODIFIED CODE SECTION ===== **/
   var chart = null;
   chart = AmCharts.makeChart("chartdiv", {
     type: "stock",
@@ -357,6 +360,7 @@ valueAxesSettings:{
   labelsEnabled: false,
   maximum: 20
 },
+/** ===== END MODIFIED CODE SECTION ===== **/
 categoryAxesSettings: {
   groupToPeriods: [ 'fff', 'ss' ], // specify period grouping
   parseDates: true,
